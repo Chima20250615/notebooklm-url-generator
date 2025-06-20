@@ -27,27 +27,27 @@ if st.button("URL一覧を取得！"):
         if links:
             st.success(f"{len(links)}件のURLを取得しました👇")
 
-            # 通常URL表示（シンプルな確認用）
+            # 通常のURL出力（確認用）
             for link in sorted(links):
                 st.text(link)
 
-# Markdown出力用
-st.markdown("---")
-st.subheader("📋 タイトル付きMarkdown形式（NotebookLMに貼り付けOK）")
-markdown_output = ""
+            # Markdown出力（タイトル付き）
+            st.markdown("---")
+            st.subheader("📋 タイトル付きMarkdown形式（NotebookLMに貼り付けOK）")
+            markdown_output = ""
 
-for link in sorted(links):
-    try:
-        r = requests.get(link, timeout=5)
-        r.encoding = r.apparent_encoding  # ← ここで自動判定
-        inner_soup = BeautifulSoup(r.text, 'html.parser')
-        title = inner_soup.title.string.strip() if inner_soup.title else "（タイトルなし）"
-    except Exception as e:
-        title = "（タイトル取得失敗）"
+            for link in sorted(links):
+                try:
+                    r = requests.get(link, timeout=5)
+                    r.encoding = r.apparent_encoding  # 文字コード自動判定
+                    inner_soup = BeautifulSoup(r.text, 'html.parser')
+                    title = inner_soup.title.string.strip() if inner_soup.title else "（タイトルなし）"
+                except Exception as e:
+                    title = "（タイトル取得失敗）"
 
-    markdown_output += f"- [{title}]({link})\n"
+                markdown_output += f"- [{title}]({link})\n"
 
-st.text_area("🔗 コピーして使ってね", markdown_output, height=300)
+            st.text_area("🔗 コピーして使ってね", markdown_output, height=300)
 
         else:
             st.warning("内部リンクが見つかりませんでした。")
