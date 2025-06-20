@@ -3,8 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 
-st.title("📄 NotebookLM用URL一覧ジェネレーター")
-st.write("指定したWebサイト内の下層ページURLを一覧化します（NotebookLM用）")
+st.title("📄 NotebookLM用URL一覧ジェネレーター（Markdown出力付き）")
+st.write("指定したWebサイト内の下層ページURLを一覧化し、タイトル付きMarkdown形式でも出力できます")
 
 # 入力：URL
 base_url = st.text_input("対象サイトのトップURLを入力してね", "https://example.com")
@@ -18,7 +18,6 @@ if st.button("URL一覧を取得！"):
         domain = f"{parsed_base.scheme}://{parsed_base.netloc}"
 
         links = set()
-
         for tag in soup.find_all("a", href=True):
             href = tag["href"]
             full_url = urljoin(base_url, href)
@@ -27,8 +26,20 @@ if st.button("URL一覧を取得！"):
 
         if links:
             st.success(f"{len(links)}件のURLを取得しました👇")
+
+            # Markdown形式で整形する
+            markdown_output = ""
             for link in sorted(links):
-                st.text(link)
+                try:
+                    r = requests.get(link, timeout=3)
+                    inner_soup = BeautifulSoup(r.text, 'html.parser')
+                    title = inner_soup.title.string.strip() if inner_soup.title else "（タイトルなし）"
+                except:
+                    title = "（タイトル取得失敗）"
+
+                markdown_output += f"- [{title}]({link})\n"
+
+            st.text_area("📋 Markdown形式（コピーしてNotebookLMへ貼り付けてね）", markdown_output, height=300)
         else:
             st.warning("内部リンクが見つかりませんでした。")
 
