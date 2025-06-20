@@ -31,20 +31,23 @@ if st.button("URL一覧を取得！"):
             for link in sorted(links):
                 st.text(link)
 
-            # Markdown出力用
-            st.markdown("---")
-            st.subheader("📋 タイトル付きMarkdown形式（NotebookLMに貼り付けOK）")
-            markdown_output = ""
-            for link in sorted(links):
-                try:
-                    r = requests.get(link, timeout=3)
-                    inner_soup = BeautifulSoup(r.text, 'html.parser')
-                    title = inner_soup.title.string.strip() if inner_soup.title else "（タイトルなし）"
-                except:
-                    title = "（タイトル取得失敗）"
-                markdown_output += f"- [{title}]({link})\n"
+# Markdown出力用
+st.markdown("---")
+st.subheader("📋 タイトル付きMarkdown形式（NotebookLMに貼り付けOK）")
+markdown_output = ""
 
-            st.text_area("🔗 コピーして使ってね", markdown_output, height=300)
+for link in sorted(links):
+    try:
+        r = requests.get(link, timeout=5)
+        r.encoding = r.apparent_encoding  # ← ここで自動判定
+        inner_soup = BeautifulSoup(r.text, 'html.parser')
+        title = inner_soup.title.string.strip() if inner_soup.title else "（タイトルなし）"
+    except Exception as e:
+        title = "（タイトル取得失敗）"
+
+    markdown_output += f"- [{title}]({link})\n"
+
+st.text_area("🔗 コピーして使ってね", markdown_output, height=300)
 
         else:
             st.warning("内部リンクが見つかりませんでした。")
